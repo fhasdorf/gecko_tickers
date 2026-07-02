@@ -79,3 +79,27 @@ Damit das Terminal immer aktuelle Daten zeigt, müssen die Python-Scripte regelm
     # IPOs einmal täglich um 08:00 Uhr abrufen
     0 8 * * * cd /pfad/zum/ordner && python3 ipo_script.py
     '''
+
+### 📦 Externe Bibliotheken (Drittanbieter)
+Diese Pakete bilden den Kern deiner Daten-Pipeline und müssen über den Paketmanager (pip) installiert werden:
+* yfinance: Das Herzstück für den Kursabruf (ticker_script.py). Es klinkt sich in die inoffizielle Yahoo Finance API ein, um historische Marktdaten, Live-Kurse und Spread-Informationen (Bid/Ask) zu ziehen.
+* pandas: Ein mächtiges Data-Science-Werkzeug, das hier in news_script.py für die Datenmanipulation genutzt wird. Es ist ideal, um die gesammelten Nachrichten aus verschiedenen Quellen in einen DataFrame zu laden, leere Einträge zu bereinigen und Duplikate sauber herauszufiltern.
+* requests: Der Standard für HTTP-Anfragen in Python. Es wird in fast allen Scripten genutzt, um externe Server anzusprechen (die Finnhub API, den Yahoo RSS Feed und die Website der Börse Düsseldorf).
+* beautifulsoup4 (im Code als bs4 importiert): Wird im ipo_script.py verwendet. Es analysiert (parst) den rohen HTML-Code der Börse Düsseldorf, damit du gezielt die Tabelle mit den Neueinführungen auslesen kannst.
+
+### 🛠️ Python Standard-Bibliotheken
+Diese Module sind bereits fest in Python integriert und erfordern keine Installation. Sie übernehmen die administrativen und logischen Hintergrundaufgaben:
+* json: Zwingend notwendig für alle Scripte, um die gesammelten und transformierten Daten in das leichtgewichtige JSON-Format zu übersetzen, welches das HTML-Frontend lesen kann.
+* pathlib: Sorgt für saubere, dynamische und systemübergreifende Dateipfade (z. B. Path(__file__).parent). Das verhindert Fehler, egal von wo aus das Script aufgerufen wird.
+* datetime / time: Wird genutzt, um Datums-Filter zu setzen (z. B. "nur IPOs der letzten 5 Tage") und um kurze Pausen (time.sleep) zwischen den API-Aufrufen einzubauen, damit Server dich nicht blockieren.
+* xml.etree.ElementTree: Ein eingebauter XML-Parser, der in silver_news_script.py genutzt wird, um die Struktur des klassischen Yahoo RSS-Feeds aufzubrechen und die Artikel-Links zu extrahieren.
+* math: Wird im Ticker-Script verwendet, um mathematische Ausnahmefehler (wie NaN oder unendliche Werte) bei der Berechnung der prozentualen Kursveränderungen abzufangen.
+
+#### Um das Projekt sauber aufzusetzen und eine konfliktfreie Umgebung zu garantieren, empfiehlt es sich, diese Abhängigkeiten direkt in einer Datei festzuhalten. Hier ist der exakte, überschneidungsfreie Inhalt für eine requirements.txt:
+
+'''
+beautifulsoup4==4.12.3
+pandas==2.2.2
+requests==2.32.3
+yfinance==0.2.40
+'''
