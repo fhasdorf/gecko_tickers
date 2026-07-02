@@ -103,3 +103,5 @@ pandas==2.2.2
 requests==2.32.3
 yfinance==0.2.40
 '''
+
+## Viel Spass mit eurem neuen Gecko-Ticker :-)
