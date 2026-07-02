@@ -105,3 +105,15 @@ yfinance==0.2.40
 '''
 
 ## Viel Spass mit eurem neuen Gecko-Ticker :-)
+
+### 📊 KPI-Berechnung & Skalierung (Data Pipeline)
+Aktuell arbeitet das Terminal stateless (zustandslos): Die Auswertung der Gewinner, Verlierer und Trending Boxen basiert auf dem momentanen Snapshot der abgerufenen Daten (aktueller Kurs vs. letzter Schlusskurs).
+
+* Level-Up für Data-Projekte:
+Die Architektur ist so vorbereitet, dass sie sich problemlos erweitern lässt. Werden die abgerufenen Kurse über die Cronjobs historisiert (z. B. weggeschrieben in eine SQLite/PostgreSQL-Datenbank oder in fortlaufende Parquet-Dateien), können mithilfe von pandas weitaus tiefere Marktanalysen berechnet und an das Frontend übergeben werden. Denkbare Upgrades:
+
+* Trendfolge-Metriken: Gleitende Durchschnitte (SMA 50 / SMA 200).
+
+* Momentum-Indikatoren: Relative Strength Index (RSI).
+
+* Langzeit-Ausreißer: Tracken von 52-Wochen-Hochs und -Tiefs.
