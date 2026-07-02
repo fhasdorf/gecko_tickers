@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Meridiana Capital - Terminal v6</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { background-color: #121518; margin: 0; padding: 40px 20px; color: #ffffff; }
+
+        /* Ticker Basis & Zentrierung */
+        .ticker-trennband { 
+            background-color: #1a1d21; 
+            border-top: 1px solid rgba(255, 255, 255, 0.1); 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            height: 45px; /* Feste Höhe für zentrierte Bänder */
+        }
+        
+        .band-with-label { display: flex; background-color: #1a1d21; border-bottom: 1px solid #1a1a1a; height: 45px; }
+        
+        .fixed-label {
+            display: flex; align-items: center; padding: 0 25px; background-color: #121518; 
+            color: #ec4899 !important; font-family: 'Courier New', Courier, monospace !important;
+            font-weight: normal !important; text-transform: uppercase;
+            border-right: 1px solid rgba(255, 255, 255, 0.2); z-index: 2; box-shadow: 2px 0 5px rgba(0,0,0,0.3); 
+        }
+
+        .scroller-container { flex-grow: 1; overflow: hidden; display: flex; align-items: center; }
+        
+        /* Schrift-Einstellungen: Courier New, normal, keine Großbuchstaben */
+        .oldskool-ticker, .oldskool-ticker a, .oldskool-ticker span, .oldskool-ticker strong {
+            font-family: 'Courier New', Courier, monospace !important;
+            text-transform: none !important; 
+            font-weight: normal !important;
+            display: flex;
+            flex-wrap: nowrap;
+            width: max-content;
+        }
+
+        .ticker-speed-fast { animation: ticker-scroll 35s linear infinite; color: #2dd4bf; }
+        .ticker-speed-medium { animation: ticker-scroll 180s linear infinite; color: #f472b6; }
+        .ticker-speed-slow { animation: ticker-scroll 240s linear infinite; color: #14b8a6; opacity: 0.8; }
+        .ticker-speed-silver { animation: ticker-scroll 70s linear infinite; color: #df3e8e; opacity: 0.8; }
+
+        @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        .ticker-item { display: inline-flex; align-items: center; padding: 0 3rem; white-space: nowrap; border-right: 1px solid rgba(255, 255, 255, 0.2); }
+        .ticker-up { color: #00ff00 !important; }
+        .ticker-down { color: #ff3333 !important; }
+        .ticker-neutral { color: #aaaaaa !important; }
+        .news-tag { color: #f59e0b !important; margin-right: 10px; }
+        .oldskool-ticker a { color: #ffffff !important; text-decoration: none; }
+
+        /* Boxen Layout */
+        .boxes-wrapper { display: flex; gap: 20px; margin-top: 30px; }
+        @media (max-width: 800px) { .boxes-wrapper { flex-direction: column; } }
+        .info-box { flex: 1; border: 1px solid; border-radius: 6px; padding: 20px; min-width: 0;}
+        .box-gewinner { border-color: #059669; }
+        .box-verlierer { border-color: #e11d48; }
+        .box-trending { border-color: #d97706; }
+        .box-title { font-family: 'Open Sans', sans-serif; font-weight: 800; font-size: 0.95rem; margin-bottom: 15px; text-transform: uppercase; }
+        .box-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; /* Hält alles schön auf einer vertikalen Linie */
+            padding: 10px 0; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 0.8rem; /* Etwas kleiner für mehr Platz */
+            color: #d1d5db; 
+        }
+        /* Der linke Teil (Der Name) */
+        .box-item span:first-child {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Erzeugt die "..." am Ende */
+            padding-right: 15px;     /* Sicherheitsabstand zum Prozentwert */
+            flex-grow: 1;            /* Nimmt sich den maximal möglichen Platz */
+        }
+
+        /* Der rechte Teil (Prozentwert & Pfeil) */
+        .box-item span:last-child {
+            white-space: nowrap;
+            flex-shrink: 0;          /* Verbietet das Stauchen oder Umbrechen der Prozente */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ticker-trennband"><div id="kurse-container" class="oldskool-ticker ticker-speed-fast"></div></div>
+    <div class="ticker-trennband"><div id="news-container" class="oldskool-ticker ticker-speed-slow"></div></div>
+    
+    <div class="band-with-label">
+        <div class="fixed-label">IPOs</div>
+        <div class="scroller-container"><div id="ipo-container" class="oldskool-ticker ticker-speed-medium"></div></div>
+    </div>
+
+    <div class="band-with-label">
+        <div class="scroller-container"><div id="silver-container" class="oldskool-ticker ticker-speed-silver"></div></div>
+    </div>
+
+    <div class="boxes-wrapper">
+        <div class="info-box box-gewinner"><div class="box-title" style="color: #10b981;">🚀 TOP GEWINNER</div><div id="gewinner-list"></div></div>
+        <div class="info-box box-verlierer"><div class="box-title" style="color: #f43f5e;">📉 TOP VERLIERER</div><div id="verlierer-list"></div></div>
+        <div class="info-box box-trending"><div class="box-title" style="color: #fbbf24;">🔥 TRENDING</div><div id="trending-list"></div></div>
+    </div>
+    </div>
+
+    <div id="update-stempel" style="text-align: right; font-family: 'Courier New', Courier, monospace; font-size: 0.7rem; color: #4b5563; margin-top: 15px; padding-right: 5px;">
+        Lade Update-Zeiten...
+    </div>
+
+    <script>
+        async function loadAll() {
+            const endpoints = ['kurse', 'news', 'ipo', 'silver_news', 'boxes'];
+            const data = {};
+            for(let e of endpoints) {
+                try { 
+                    const res = await fetch(`${e}.json?t=${new Date().getTime()}`); 
+                    data[e] = await res.json(); 
+                } catch(err) { 
+                    data[e] = null; 
+                }
+            }
+
+            // Kurse mit 5 Nachkommastellen
+            if(data.kurse) {
+                document.getElementById('kurse-container').innerHTML = data.kurse.map(item => `
+                    <span class="ticker-item">
+                        <strong>${item.name}</strong> &nbsp;${item.price.toFixed(5)}&nbsp; 
+                        <span class="${item.trend_class}">${item.change_pct_str} ${item.arrow}</span>
+                        ${item.is_stock ? `<span style="color:#fff; font-size:0.85em; margin-left:15px;">[BID:${item.bid.toFixed(3)}|ASK:${item.ask.toFixed(3)}|LAST:${item.price.toFixed(3)}]</span>` : ''}
+                    </span>
+                `).join('') + '...';
+            }
+
+            // 1. Allgemeine News
+            if (data.news) {
+                document.getElementById('news-container').innerHTML = data.news.map(n => 
+                    `<span class="ticker-item"><span class="news-tag">NEWS</span><a href="${n.url}" target="_blank">${n.title}</a></span>`
+                ).join('');
+            }
+
+            // 2. IPOs
+            if (data.ipo) {
+                document.getElementById('ipo-container').innerHTML = data.ipo.map(n => 
+                    `<span class="ticker-item"><a href="${n.url}" target="_blank">${n.title}</a></span>`
+                ).join('');
+            }
+
+            // 3. Silber News
+            if (data.silver_news) {
+                document.getElementById('silver-container').innerHTML = data.silver_news.map(n => 
+                    `<span class="ticker-item"><span class="news-tag" style="color:#cbd5e1">SILVER</span><a href="${n.url}" target="_blank">${n.title}</a></span>`
+                ).join('');
+            }
+
+            if(data.boxes) {
+                const render = (items) => items.map(i => `<div class="box-item"><span>${i.name}</span><span class="${i.trend_class}">${i.arrow} ${i.change_pct_str}</span></div>`).join('');
+                document.getElementById('gewinner-list').innerHTML = render(data.boxes.gewinner);
+                document.getElementById('verlierer-list').innerHTML = render(data.boxes.verlierer);
+                document.getElementById('trending-list').innerHTML = render(data.boxes.trending);
+            }
+
+            // NEU: Uhrzeit-Stempel generieren und eintragen
+            const jetzt = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const stempelElement = document.getElementById('update-stempel');
+            if(stempelElement) {
+                stempelElement.innerHTML = `KURSE AKTUALISIERT: ${jetzt} UHR | NEWS AKTUALISIERT: ${jetzt} UHR`;
+            }
+        }
+        
+        loadAll(); setInterval(loadAll, 300000);
+    </script>
+</body>
+</html>
